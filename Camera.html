@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Сделать фото по ссылке</title>
+    <style>
+        /* Стилизуем кнопку как обычную ссылку */
+        #snap {
+            color: blue;
+            text-decoration: underline;
+            cursor: pointer;
+            background: none;
+            border: none;
+            font-size: 16px;
+            padding: 0;
+        }
+        #video, #canvas {
+            display: none; /* Прячем элементы видео до нужного момента */
+        }
+        .container {
+            text-align: center;
+            margin-top: 50px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <p>Нажмите на ссылку, чтобы сделать снимок:</p>
+    <button id="snap">Нажми меня, чтобы сфотографироваться</button>
+    
+    <br><br>
+    <video id="video" width="640" height="480" autoplay></video>
+    <canvas id="canvas" width="640" height="480"></canvas>
+    
+    <div id="result">
+        <p>Ваше фото появится здесь:</p>
+        <img id="photo" alt="Здесь будет ваше фото">
+    </div>
+</div>
+
+<script>
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+    const snap = document.getElementById('snap');
+    const photo = document.getElementById('photo');
+
+    snap.addEventListener('click', async () => {
+        try {
+            // Запрашиваем доступ к камере
+            const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+            video.srcObject = stream;
+            
+            // Ждем секунду, чтобы камера успела сфокусироваться
+            setTimeout(() => {
+                const context = canvas.getContext('2d');
+                context.drawImage(video, 0, 0, 640, 480);
+                
+                // Превращаем данные из canvas в картинку
+                const data = canvas.toDataURL('image/png');
+                photo.setAttribute('src', data);
+                
+                // Выключаем камеру после снимка
+                stream.getTracks().forEach(track => track.stop());
+            }, 1000);
+            
+        } catch (err) {
+            alert("Ошибка: Доступ к камере отклонен или камера не найдена.");
+            console.error(err);
+        }
+    });
+</script>
+
+</body>
+</html>
+
